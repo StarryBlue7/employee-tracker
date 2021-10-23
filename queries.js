@@ -16,21 +16,21 @@ function mainMenu() {
         });
 }
 
-function queryDepartment() {
+function queryAddDepartment() {
     const questions = [
         {
             message: 'Enter department name: ',
-            name: 'department'
+            name: 'name'
         }
     ];
 
     inquirer
         .prompt(questions).then(answer => {
-            return answer.choice;
+            return answer.name;
         });
 }
 
-function queryRole(departmentsObj) {
+function queryAddRole(departmentsObj) {
     const departments =  [];
     departmentsObj.forEach(obj => {
         const department = obj.name[0].toUpperCase() + obj.name.substring(1);
@@ -58,9 +58,48 @@ function queryRole(departmentsObj) {
     ];
 
     inquirer
-        .prompt(questions).then(answer => {
-            return answer.choice;
+        .prompt(questions).then(role => {
+            return role;
         });
+}
+
+function queryAddEmployee(rolesObj, employeesObj) {
+    const roles =  [];
+    const employees = ['None'];
+    rolesObj.forEach(obj => {
+        const role = obj.name[0].toUpperCase() + obj.name.substring(1);
+        roles.push(role);
+    });
+    employeesObj.forEach(obj => {
+        const employee = obj.first_name + ' ' + obj.last_name;
+        employees.push(employee);
+    });
+
+    const questions = [
+        {
+            message: 'Enter employee\'s first name: ',
+            name: 'first_name'
+        },
+        {
+            message: 'Enter employee\'s last name: ',
+            name: 'last_name'
+        },
+        {
+            type: 'list',
+            message: 'Select employee\'s role: ',
+            choices: roles, 
+                filter(val) {
+                    return val.toLowerCase();
+                },
+            name: 'role'
+        },
+        {
+            type: 'list',
+            message: 'Select employee\'s manager',
+            choices: employees,
+            name: 'manager'
+        }
+    ];
 }
 
 module.exports = { mainMenu }
