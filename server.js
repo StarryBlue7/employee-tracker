@@ -16,13 +16,13 @@ function view(choice) {
     let table;
     switch (choice) {
         case 'View All Employees':
-            table = 'employees';
+            table = 'employee';
             break;
         case 'View All Roles':
-            table = 'roles';
+            table = 'role';
             break;
         case 'View All Departments':
-            table = 'departments';
+            table = 'department';
             break;
     }
     db.query(`SELECT * FROM ${table}`, (err, results) => {
@@ -30,4 +30,23 @@ function view(choice) {
     });
 }
 
-view('View All Employees');
+function getRoles() {
+    db.query(`SELECT title FROM role`, (err, results) => {
+        err ? console.error(err) : console.log(results);
+    });
+}
+
+function getManagers() {
+    db.query(`SELECT first_name, last_name FROM employee`, (err, results) => {
+        err ? console.error(err) : console.log(results);
+    });
+}
+
+function addEmployee(employee) {
+    db.query(`INSERT INTO employee 
+    (first_name, last_name, role_id, manager_id) 
+    VALUES ("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${employee.manager_id})`, 
+    (err, results) => {
+        err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
+    });
+}
