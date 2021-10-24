@@ -1,6 +1,8 @@
+const util = require('util');
 const mysql = require('mysql2');
+const inquirer = require('inquirer');
 const consoleTable = require('console.table');
-const { mainMenu } = require('./queries')
+const { mainMenu, queryAddDepartment, queryAddEmployee } = require('./queries')
 
 const db = mysql.createConnection(
     {
@@ -12,19 +14,7 @@ const db = mysql.createConnection(
     console.log('Connected to the employee_db database.')
 );
 
-function view(choice) {
-    let table;
-    switch (choice) {
-        case 'View All Employees':
-            table = 'employee';
-            break;
-        case 'View All Roles':
-            table = 'role';
-            break;
-        case 'View All Departments':
-            table = 'department';
-            break;
-    }
+function view(table) {
     db.query(`SELECT * FROM ${table}`, (err, results) => {
         err ? console.error(err) : console.table(results);
     });
@@ -44,9 +34,41 @@ function getManagers() {
 
 function addEmployee(employee) {
     db.query(`INSERT INTO employee 
-    (first_name, last_name, role_id, manager_id) 
-    VALUES ("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${employee.manager_id})`, 
-    (err, results) => {
-        err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
+        (first_name, last_name, role_id, manager_id) 
+        VALUES ("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${employee.manager_id})`, 
+        (err, results) => {
+            err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
     });
 }
+
+function main() {
+    mainMenu().then(answer => {
+        switch (answer.choice) {
+            case 'View All Employees':
+                view('employee');
+                break;
+            case 'View All Roles':
+                view('role');
+                break;
+            case 'View All Departments':
+                view('department');
+                break;
+            case 'Add Employee':
+
+                break;
+            case 'Update Employee Role':
+
+                break;
+            case 'Add Role':
+
+                break;
+            case 'Add Department':
+
+                break;
+            default:
+                console.log('Goodbye.');
+        }
+    }).catch(err => console.error(err));
+}
+
+main();

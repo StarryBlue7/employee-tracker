@@ -1,19 +1,41 @@
 const inquirer = require("inquirer");
 
+// const mainMenu = [
+//     {
+//         type: 'list',
+//         message: 'What would you like to do?',
+//         choices: [
+//             'View All Employees', 
+//             'Add Employee', 
+//             'Update Employee Role', 
+//             'View All Roles', 
+//             'Add Role', 
+//             'View All Departments', 
+//             'Add Department', 
+//             'Quit'],
+//         name: 'choice'
+//     }
+// ];
+
 function mainMenu() {
     const menu = [
         {
             type: 'list',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department', 'Quit'],
+            choices: [
+                'View All Employees', 
+                'Add Employee', 
+                'Update Employee Role', 
+                'View All Roles', 
+                'Add Role', 
+                'View All Departments', 
+                'Add Department', 
+                'Quit'],
             name: 'choice'
         }
     ];
 
-    inquirer
-        .prompt(menu).then(answer => {
-            return answer.choice;
-        });
+    return inquirer.prompt(menu)
 }
 
 function queryAddDepartment() {
@@ -40,7 +62,7 @@ function queryAddRole(departmentsObj) {
     const questions = [
         {
             message: 'Enter role name: ',
-            name: 'role'
+            name: 'title'
         },
         {
             message: 'Enter role salary: ',
@@ -100,6 +122,11 @@ function queryAddEmployee(rolesObj, employeesObj) {
             name: 'manager'
         }
     ];
+
+    inquirer
+        .prompt(questions).then(employee => {
+            return employee;
+        });
 }
 
-module.exports = { mainMenu }
+module.exports = { mainMenu, queryAddDepartment, queryAddEmployee }
