@@ -31,20 +31,23 @@ function getManagers() {
     return db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`);
 }
 
-function addEmployee(employee) {
+function addEmployee() {
     getRoles().then(roles => {
         getManagers().then(managers => {
             queryAddEmployee(roles, managers).then(employee => {
-
+                const role_id = roles[0].filter(role => role.title === employee.role)[0].id;
+                const manager = managers[0].filter(manager => manager.name === employee.manager);
+                const manager_id = manager.length ? manager[0].id : null;
+                db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+                    VALUES (?, ?, ?, ?)`, [employee.first_name, employee.last_name, role_id, manager_id], 
+                    (err, results) => {
+                        err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
+                        return main();
+                    }
+                );
             });
         });
-    });
-    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
-        VALUES ("${employee.first_name}", "${employee.last_name}", ${role_id}, ${manager_id})`, 
-        (err, results) => {
-            err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
-            return main();
-    });
+    }); 
 }
 
 function addRole() {
@@ -93,7 +96,7 @@ function main() {
                 view('department', 'name AS Departments');
                 break;
             case 'Add Employee':
-
+                addEmployee();
                 break;
             case 'Update Employee Role':
 

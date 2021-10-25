@@ -58,16 +58,14 @@ function queryAddRole(departmentsQuery) {
     return inquirer.prompt(questions)
 }
 
-function queryAddEmployee(rolesObj, employeesObj) {
+function queryAddEmployee(rolesQuery, employeesQuery) {
     const roles =  [];
     const employees = ['None'];
-    rolesObj.forEach(obj => {
-        const role = obj.name[0].toUpperCase() + obj.name.substring(1);
-        roles.push(role);
+    rolesQuery[0].forEach(obj => {
+        roles.push(obj.title);
     });
-    employeesObj.forEach(obj => {
-        const employee = obj.first_name + ' ' + obj.last_name;
-        employees.push(employee);
+    employeesQuery[0].forEach(obj => {
+        employees.push(obj.name);
     });
 
     const questions = [
