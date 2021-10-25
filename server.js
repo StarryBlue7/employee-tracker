@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee } = require('./queries')
+const { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseDepartment } = require('./queries')
 
 const db = mysql.createConnection(
     {
@@ -16,6 +16,58 @@ function view(table, selection, join) {
     db.query(`SELECT ${selection || '*'} FROM ${table} ${join || ''}`, (err, results) => {
         err ? console.error(err) : console.table(results);
         main();
+    });
+}
+
+function viewBy(filter) {
+    getEmployees().then(employeesQuery => {
+        if (filter === 'manager') {
+            chooseEmployee(employeesQuery).then(manager => {
+                const manager_id = employeesQuery[0].filter(employee => employee.name === manager.name)[0].id;
+                db.query(`SELECT 
+                    employee.id AS ID, 
+                    employee.first_name AS "First Name", 
+                    employee.last_name AS "Last Name", 
+                    title AS Title, 
+                    name AS Department, 
+                    salary AS Salary
+                    FROM employee
+                    LEFT JOIN role ON employee.role_id = role.id
+                    LEFT JOIN department ON role.department_id = department.id
+                    INNER JOIN employee AS manager ON employee.manager_id = manager.id
+                    WHERE manager.id = ?`, 
+                    manager_id,
+                    (err, results) => {
+                        err ? console.error(err) : console.table(results);
+                        main();
+                    }
+                );
+            });
+        } else {
+            getDepartments().then(departmentsQuery => {
+                chooseDepartment(departmentsQuery).then(department => {
+                    const department_id = departmentsQuery[0].filter(obj => obj.name === department.name)[0].id;
+                    db.query(`SELECT 
+                        employee.id AS ID, 
+                        employee.first_name AS "First Name", 
+                        employee.last_name AS "Last Name", 
+                        title AS Title, 
+                        CONCAT_WS(\' \', manager.first_name, manager.last_name) AS Manager, 
+                        salary AS Salary
+                        FROM employee
+                        LEFT JOIN role ON employee.role_id = role.id
+                        LEFT JOIN employee AS manager ON employee.manager_id = manager.id
+                        INNER JOIN department ON role.department_id = department.id
+                        WHERE department_id = ?`, 
+                        department_id,
+                        (err, results) => {
+                            err ? console.error(err) : console.table(results);
+                            main();
+                        }
+                    );
+                });
+            });
+        };
     });
 }
 
@@ -119,6 +171,12 @@ function main() {
                     'name AS Departments'
                 );
                 break;
+            case 'View Employees by Manager':
+                viewBy('manager');
+                break;
+            case 'View Employees by Department':
+                viewBy('department');
+                break;
             case 'Add Employee':
                 setEmployee(true);
                 break;
@@ -130,6 +188,15 @@ function main() {
                 break;
             case 'Add Department':
                 addDepartment();
+                break;
+            case 'Delete Employee':
+                deleteRow('employee');
+                break;
+            case 'Delete Role':
+                deleteRow('role');
+                break;
+            case 'Delete Department':
+                deleteRow('department');
                 break;
             default:
                 console.log(`\nGoodbye.\n`);
