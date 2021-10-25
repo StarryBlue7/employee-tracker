@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const { mainMenu, queryAddDepartment, queryAddEmployee } = require('./queries')
+const { mainMenu, queryAddDepartment, queryAddRole, queryAddEmployee } = require('./queries')
 
 const db = mysql.createConnection(
     {
@@ -19,14 +19,18 @@ function view(table, selection, join) {
     });
 }
 
+function getDepartments() {
+    return db.promise().query(`SELECT name FROM department`);
+}
+
 function getRoles() {
-    db.query(`SELECT title FROM role`, (err, results) => {
+    db.promise().query(`SELECT title FROM role`, (err, results) => {
         err ? console.error(err) : console.log(results);
     });
 }
 
 function getManagers() {
-    db.query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`, (err, results) => {
+    db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`, (err, results) => {
         err ? console.error(err) : console.log(results);
     });
 }
@@ -36,27 +40,31 @@ function addEmployee(employee) {
         (first_name, last_name, role_id, manager_id) 
         VALUES ("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${employee.manager_id})`, 
         (err, results) => {
-            err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
+            err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
             main();
     });
 }
 
-function addRole(role) {
-    queryAddRole().then(role => {
-        
+function addRole() {
+    getDepartments().then(departments => {
+        queryAddRole(departments).then(role => {
+        db.promise().query(`SELECT id FROM department WHERE name = ?`, role.department).then(department_id => {
+            db.query(`INSERT INTO role (title, salary, department_id) 
+            VALUES (?, ?, ?)`, [role.title, role.salary, department_id[0][0].id], 
+            (err, results) => {
+                err ? console.error(err) : console.log(`\nAdded ${role.title} to employee database roles.\n`);
+                return main();
+            });
+        })
+    })     
     })
-    db.query(`INSERT INTO role (title, salary, department_id) 
-        VALUES (?, ?, ?)`, [role.title, role.salary, department_id.id], 
-        (err, results) => {
-            err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
-            return main();
-    });
+    
 }
 
 function addDepartment() {
     queryAddDepartment().then(department => {
         db.query(`INSERT INTO department (name) VALUES (?)`, department.name, (err, results) => {
-                err ? console.error(err) : console.log(`Added ${department.name} to database.`);
+                err ? console.error(err) : console.log(`\nAdded ${department.name} to employee database departments.\n`);
                 return main();
             });
     });
@@ -90,7 +98,7 @@ function main() {
 
                 break;
             case 'Add Role':
-
+                addRole();
                 break;
             case 'Add Department':
                 addDepartment();

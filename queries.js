@@ -1,22 +1,5 @@
 const inquirer = require("inquirer");
 
-// const mainMenu = [
-//     {
-//         type: 'list',
-//         message: 'What would you like to do?',
-//         choices: [
-//             'View All Employees', 
-//             'Add Employee', 
-//             'Update Employee Role', 
-//             'View All Roles', 
-//             'Add Role', 
-//             'View All Departments', 
-//             'Add Department', 
-//             'Quit'],
-//         name: 'choice'
-//     }
-// ];
-
 function mainMenu() {
     const menu = [
         {
@@ -46,17 +29,13 @@ function queryAddDepartment() {
         }
     ];
 
-    inquirer
-        .prompt(questions).then(answer => {
-            return answer.name;
-        });
+    return inquirer.prompt(questions)
 }
 
-function queryAddRole(departmentsObj) {
-    const departments =  [];
-    departmentsObj.forEach(obj => {
-        const department = obj.name[0].toUpperCase() + obj.name.substring(1);
-        departments.push(department);
+function queryAddRole(departmentsQuery) {
+    const departments = [];
+    departmentsQuery[0].forEach(obj => {
+        departments.push(obj.name);
     });
 
     const questions = [
@@ -71,18 +50,12 @@ function queryAddRole(departmentsObj) {
         {
             type: 'list',
             message: 'Select role\'s department',
-            choices: departments, 
-                filter(val) {
-                    return val.toLowerCase();
-                },
+            choices: departments,
             name: 'department'
         }
     ];
 
-    inquirer
-        .prompt(questions).then(role => {
-            return role;
-        });
+    return inquirer.prompt(questions)
 }
 
 function queryAddEmployee(rolesObj, employeesObj) {
@@ -109,24 +82,21 @@ function queryAddEmployee(rolesObj, employeesObj) {
         {
             type: 'list',
             message: 'Select employee\'s role: ',
-            choices: roles, 
-                filter(val) {
-                    return val.toLowerCase();
-                },
+            choices: roles,
             name: 'role'
         },
         {
             type: 'list',
             message: 'Select employee\'s manager',
             choices: employees,
+            filter(val) {
+                return val === 'None' ? NULL : val;
+            },
             name: 'manager'
         }
     ];
 
-    inquirer
-        .prompt(questions).then(employee => {
-            return employee;
-        });
+    return inquirer.prompt(questions);
 }
 
-module.exports = { mainMenu, queryAddDepartment, queryAddEmployee }
+module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryAddEmployee }
