@@ -20,45 +20,46 @@ function view(table, selection, join) {
 }
 
 function getDepartments() {
-    return db.promise().query(`SELECT name FROM department`);
+    return db.promise().query(`SELECT id, name FROM department`);
 }
 
 function getRoles() {
-    db.promise().query(`SELECT title FROM role`, (err, results) => {
-        err ? console.error(err) : console.log(results);
-    });
+    return db.promise().query(`SELECT id, title FROM role`);
 }
 
 function getManagers() {
-    db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`, (err, results) => {
-        err ? console.error(err) : console.log(results);
-    });
+    return db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`);
 }
 
 function addEmployee(employee) {
-    db.query(`INSERT INTO employee 
-        (first_name, last_name, role_id, manager_id) 
-        VALUES ("${employee.first_name}", "${employee.last_name}", ${employee.role_id}, ${employee.manager_id})`, 
+    getRoles().then(roles => {
+        getManagers().then(managers => {
+            queryAddEmployee(roles, managers).then(employee => {
+
+            });
+        });
+    });
+    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+        VALUES ("${employee.first_name}", "${employee.last_name}", ${role_id}, ${manager_id})`, 
         (err, results) => {
             err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
-            main();
+            return main();
     });
 }
 
 function addRole() {
     getDepartments().then(departments => {
         queryAddRole(departments).then(role => {
-        db.promise().query(`SELECT id FROM department WHERE name = ?`, role.department).then(department_id => {
+            const department_id = departments[0].filter(department => department.name === role.department);
             db.query(`INSERT INTO role (title, salary, department_id) 
-            VALUES (?, ?, ?)`, [role.title, role.salary, department_id[0][0].id], 
-            (err, results) => {
-                err ? console.error(err) : console.log(`\nAdded ${role.title} to employee database roles.\n`);
-                return main();
-            });
-        })
-    })     
-    })
-    
+                VALUES (?, ?, ?)`, [role.title, role.salary, department_id[0].id], 
+                (err, results) => {
+                    err ? console.error(err) : console.log(`\nAdded ${role.title} to employee database roles.\n`);
+                    return main();
+                }
+            );
+        });    
+    });
 }
 
 function addDepartment() {
