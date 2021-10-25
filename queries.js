@@ -8,7 +8,7 @@ function mainMenu() {
             choices: [
                 'View All Employees', 
                 'Add Employee', 
-                'Update Employee Role', 
+                'Update Employee', 
                 'View All Roles', 
                 'Add Role', 
                 'View All Departments', 
@@ -58,17 +58,23 @@ function queryAddRole(departmentsQuery) {
     return inquirer.prompt(questions)
 }
 
-function queryAddEmployee(rolesQuery, employeesQuery) {
-    const roles =  [];
-    const employees = ['None'];
-    rolesQuery[0].forEach(obj => {
-        roles.push(obj.title);
+function queryEmployee(rolesQuery, employeesQuery, isNew, employee) {
+    const roleList = [];
+    const employeeList = ['None'];
+    
+    rolesQuery[0].forEach(role => {
+        roleList.push(role.title);
     });
     employeesQuery[0].forEach(obj => {
-        employees.push(obj.name);
+        employeeList.push(obj.name);
     });
 
-    const questions = [
+    let managerList;
+    if (!isNew) {
+        managerList = employeeList.filter(name => name !== employee.name)
+    }
+
+    const newQuestions = [
         {
             message: 'Enter employee\'s first name: ',
             name: 'first_name'
@@ -80,21 +86,50 @@ function queryAddEmployee(rolesQuery, employeesQuery) {
         {
             type: 'list',
             message: 'Select employee\'s role: ',
-            choices: roles,
+            choices: roleList,
             name: 'role'
         },
         {
             type: 'list',
             message: 'Select employee\'s manager',
-            choices: employees,
-            filter(val) {
-                return val === 'None' ? NULL : val;
-            },
+            choices: employeeList,
             name: 'manager'
+        }
+    ];
+
+    const updateQuestions = [
+        {
+            type: 'list',
+            message: 'Select employee\'s role: ',
+            choices: roleList,
+            name: 'role'
+        },
+        {
+            type: 'list',
+            message: 'Select employee\'s manager',
+            choices: managerList,
+            name: 'manager'
+        }
+    ];
+
+    return isNew ? inquirer.prompt(newQuestions) : inquirer.prompt(updateQuestions);
+}
+
+function chooseEmployee(employeesQuery) {
+    const employeeList = [];
+    employeesQuery[0].forEach(employee => {
+        employeeList.push(employee.name);
+    });
+
+    const questions = [
+        {
+            type: 'list',
+            message: 'Select employee',
+            choices: employeeList,
+            name: 'name'
         }
     ];
 
     return inquirer.prompt(questions);
 }
-
-module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryAddEmployee }
+module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee }

@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const { mainMenu, queryAddDepartment, queryAddRole, queryAddEmployee } = require('./queries')
+const { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee } = require('./queries')
 
 const db = mysql.createConnection(
     {
@@ -27,25 +27,45 @@ function getRoles() {
     return db.promise().query(`SELECT id, title FROM role`);
 }
 
-function getManagers() {
+function getEmployees() {
     return db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`);
 }
 
-function addEmployee() {
-    getRoles().then(roles => {
-        getManagers().then(managers => {
-            queryAddEmployee(roles, managers).then(employee => {
-                const role_id = roles[0].filter(role => role.title === employee.role)[0].id;
-                const manager = managers[0].filter(manager => manager.name === employee.manager);
-                const manager_id = manager.length ? manager[0].id : null;
-                db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
-                    VALUES (?, ?, ?, ?)`, [employee.first_name, employee.last_name, role_id, manager_id], 
-                    (err, results) => {
-                        err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
-                        return main();
-                    }
-                );
-            });
+function setEmployee(isNew) {
+    getRoles().then(rolesQuery => {
+        getEmployees().then(employeesQuery => {
+            if (isNew) {
+                queryEmployee(rolesQuery, employeesQuery, true).then(employee => {
+                    const role_id = rolesQuery[0].filter(role => role.title === employee.role)[0].id;
+                    const manager = employeesQuery[0].filter(manager => manager.name === employee.manager);
+                    const manager_id = manager.length ? manager[0].id : null;
+
+                    db.query(`INSERT INTO employee (first_name, last_name, role_id, manager_id) 
+                        VALUES (?, ?, ?, ?)`, [employee.first_name, employee.last_name, role_id, manager_id], 
+                        (err, results) => {
+                            err ? console.error(err) : console.log(`\nAdded ${employee.first_name} ${employee.last_name} to employee database.\n`);
+                            return main();
+                        }
+                    );
+                });
+            } else {
+                chooseEmployee(employeesQuery).then(currentEmployee => {
+                    queryEmployee(rolesQuery, employeesQuery, false, currentEmployee).then(employee => {
+                        const employee_id = employeesQuery[0].filter(obj => obj.name === currentEmployee.name)[0].id;
+                        const role_id = rolesQuery[0].filter(role => role.title === employee.role)[0].id;
+                        const manager = employeesQuery[0].filter(manager => manager.name === employee.manager);
+                        const manager_id = manager.length ? manager[0].id : null;
+
+                        db.query(`UPDATE employee SET role_id = ?, manager_id = ? WHERE id = ?`, 
+                            [role_id, manager_id, employee_id], 
+                            (err, results) => {
+                                err ? console.error(err) : console.log(`\nUpdated ${currentEmployee.name} info in employee database.\n`);
+                                return main();
+                            }
+                        );
+                    });
+                });
+            }
         });
     }); 
 }
@@ -53,9 +73,9 @@ function addEmployee() {
 function addRole() {
     getDepartments().then(departments => {
         queryAddRole(departments).then(role => {
-            const department_id = departments[0].filter(department => department.name === role.department);
+            const department_id = departments[0].filter(department => department.name === role.department)[0].id;
             db.query(`INSERT INTO role (title, salary, department_id) 
-                VALUES (?, ?, ?)`, [role.title, role.salary, department_id[0].id], 
+                VALUES (?, ?, ?)`, [role.title, role.salary, department_id], 
                 (err, results) => {
                     err ? console.error(err) : console.log(`\nAdded ${role.title} to employee database roles.\n`);
                     return main();
@@ -83,7 +103,8 @@ function main() {
                     'employee.id AS ID, employee.first_name AS "First Name", employee.last_name AS "Last Name", title AS Title, name AS Department, salary AS Salary, CONCAT_WS(\' \', manager.first_name, manager.last_name) AS Manager', 
                     'LEFT JOIN role ON employee.role_id = role.id ' + 
                     'LEFT JOIN department ON role.department_id = department.id ' +
-                    'LEFT JOIN employee AS manager ON employee.manager_id = manager.id');
+                    'LEFT JOIN employee AS manager ON employee.manager_id = manager.id'
+                );
                 break;
             case 'View All Roles':
                 view(
@@ -93,13 +114,16 @@ function main() {
                 );
                 break;
             case 'View All Departments':
-                view('department', 'name AS Departments');
+                view(
+                    'department', 
+                    'name AS Departments'
+                );
                 break;
             case 'Add Employee':
-                addEmployee();
+                setEmployee(true);
                 break;
-            case 'Update Employee Role':
-
+            case 'Update Employee':
+                setEmployee(false);
                 break;
             case 'Add Role':
                 addRole();
