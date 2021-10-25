@@ -41,6 +41,27 @@ function addEmployee(employee) {
     });
 }
 
+function addRole(role) {
+    queryAddRole().then(role => {
+        
+    })
+    db.query(`INSERT INTO role (title, salary, department_id) 
+        VALUES (?, ?, ?)`, [role.title, role.salary, department_id.id], 
+        (err, results) => {
+            err ? console.error(err) : console.log(`Added ${employee.first_name} ${employee.last_name} to employee database.`);
+            return main();
+    });
+}
+
+function addDepartment() {
+    queryAddDepartment().then(department => {
+        db.query(`INSERT INTO department (name) VALUES (?)`, department.name, (err, results) => {
+                err ? console.error(err) : console.log(`Added ${department.name} to database.`);
+                return main();
+            });
+    });
+}
+
 function main() {
     mainMenu().then(answer => {
         switch (answer.choice) {
@@ -72,10 +93,11 @@ function main() {
 
                 break;
             case 'Add Department':
-
+                addDepartment();
                 break;
             default:
-                console.log('Goodbye.');
+                console.log(`\nGoodbye.\n`);
+                process.exit();
         }
     }).catch(err => console.error(err));
 }
