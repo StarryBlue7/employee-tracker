@@ -1,4 +1,4 @@
-INSERT INTO departments (name)
+INSERT INTO department (name)
 VALUES ("Tank"),
        ("Healer"),
        ("Caster"),
@@ -6,8 +6,8 @@ VALUES ("Tank"),
        ("Melee"),
        ("Admin");
 
-INSERT INTO roles (title, salary, department_id)
-VALUES ("Leader", 90000, 5),
+INSERT INTO role (title, salary, department_id)
+VALUES ("Leader", 90000, 6),
        ("Gunbreaker", 90000, 1),
        ("Marauder", 75000, 1),
        ("Astrologian", 90000, 2),
@@ -18,9 +18,9 @@ VALUES ("Leader", 90000, 5),
        ("Archer", 70000, 4),
        ("Dragoon", 70000, 5),
        ("Monk", 65000, 5),
-       ("Accountant", 65000, 5);
+       ("Accountant", 65000, 6);
 
-INSERT INTO employees (first_name, last_name, role_id, manager_id)
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
 VALUES ("Minfilia", "Warde", 1, NULL),
        ("Thancred", "Waters", 2, 1),
        ("Y'shtola", "Rhul", 8, 1),
