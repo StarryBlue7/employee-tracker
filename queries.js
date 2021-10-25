@@ -138,6 +138,24 @@ function chooseEmployee(employeesQuery) {
     return inquirer.prompt(questions);
 }
 
+function chooseRole(roleQuery) {
+    const roleList = [];
+    roleQuery[0].forEach(role => {
+        roleList.push(role.title);
+    });
+    console.log(roleList);
+    const questions = [
+        {
+            type: 'list',
+            message: 'Select role:',
+            choices: roleList,
+            name: 'title'
+        }
+    ];
+
+    return inquirer.prompt(questions);
+}
+
 function chooseDepartment(departmentsQuery) {
     const departmentList = [];
     departmentsQuery[0].forEach(department => {
@@ -156,4 +174,4 @@ function chooseDepartment(departmentsQuery) {
     return inquirer.prompt(questions);
 }
 
-module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseDepartment }
+module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseRole, chooseDepartment }

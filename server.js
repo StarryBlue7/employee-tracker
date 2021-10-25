@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
-const { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseDepartment } = require('./queries')
+const { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseRole, chooseDepartment } = require('./queries')
 
 const db = mysql.createConnection(
     {
@@ -146,6 +146,34 @@ function addDepartment() {
     });
 }
 
+function deleteFrom(table) {
+    switch (table) {
+        case 'employee':
+            getEmployees()
+                .then(employeeList => chooseEmployee(employeeList)
+                .then(employee => deleteRow(table, employee, employeeList, 'name')));
+            break;
+        case 'role':
+            getRoles()
+                .then(roleList => chooseRole(roleList)
+                .then(role => deleteRow(table, role, roleList, 'title')));
+            break;
+        case 'department':
+            getDepartments()
+                .then(departmentList => chooseDepartment(departmentList)
+                .then(department => deleteRow(table, department, departmentList, 'name')));
+            break;
+    }
+}
+
+function deleteRow(table, item, itemList, key) {
+    const item_id = itemList[0].filter(obj => obj[key] === item[key])[0].id;
+    db.query(`DELETE FROM ${table} WHERE id = ?`, item_id, (err, result) => {
+        err ? console.error(err) : console.log(`\n${item[key]} deleted!\n`)
+        return main();
+    });
+};
+
 function main() {
     mainMenu().then(answer => {
         switch (answer.choice) {
@@ -190,13 +218,13 @@ function main() {
                 addDepartment();
                 break;
             case 'Delete Employee':
-                deleteRow('employee');
+                deleteFrom('employee');
                 break;
             case 'Delete Role':
-                deleteRow('role');
+                deleteFrom('role');
                 break;
             case 'Delete Department':
-                deleteRow('department');
+                deleteFrom('department');
                 break;
             default:
                 console.log(`\nGoodbye.\n`);
