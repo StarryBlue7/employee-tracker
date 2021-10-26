@@ -68,7 +68,7 @@ function queryEmployee(rolesQuery, employeesQuery, isNew, employee) {
     const employeeList = ['None'];
     
     rolesQuery[0].forEach(role => {
-        roleList.push(role.title);
+        roleList.push(role.name);
     });
     employeesQuery[0].forEach(obj => {
         employeeList.push(obj.name);
@@ -120,17 +120,17 @@ function queryEmployee(rolesQuery, employeesQuery, isNew, employee) {
     return isNew ? inquirer.prompt(newQuestions) : inquirer.prompt(updateQuestions);
 }
 
-function chooseEmployee(employeesQuery) {
-    const employeeList = [];
-    employeesQuery[0].forEach(employee => {
-        employeeList.push(employee.name);
+function chooseFromList(type, queryResult) {
+    const list = [];
+    queryResult[0].forEach(item => {
+        list.push(item.name);
     });
 
     const questions = [
         {
             type: 'list',
-            message: 'Select employee:',
-            choices: employeeList,
+            message: `Select ${type}:`,
+            choices: list,
             name: 'name'
         }
     ];
@@ -138,40 +138,4 @@ function chooseEmployee(employeesQuery) {
     return inquirer.prompt(questions);
 }
 
-function chooseRole(roleQuery) {
-    const roleList = [];
-    roleQuery[0].forEach(role => {
-        roleList.push(role.title);
-    });
-    console.log(roleList);
-    const questions = [
-        {
-            type: 'list',
-            message: 'Select role:',
-            choices: roleList,
-            name: 'title'
-        }
-    ];
-
-    return inquirer.prompt(questions);
-}
-
-function chooseDepartment(departmentsQuery) {
-    const departmentList = [];
-    departmentsQuery[0].forEach(department => {
-        departmentList.push(department.name);
-    });
-
-    const questions = [
-        {
-            type: 'list',
-            message: 'Select department:',
-            choices: departmentList,
-            name: 'name'
-        }
-    ];
-
-    return inquirer.prompt(questions);
-}
-
-module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseEmployee, chooseRole, chooseDepartment }
+module.exports = { mainMenu, queryAddDepartment, queryAddRole, queryEmployee, chooseFromList }
