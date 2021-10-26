@@ -8,6 +8,7 @@ const {
     chooseFromList 
 } = require('./queries')
 
+// Database connection
 const db = mysql.createConnection(
     {
       host: 'localhost',
@@ -18,6 +19,7 @@ const db = mysql.createConnection(
     console.log('Connected to the employee_db database.')
 );
 
+// View tables
 function view(table, selection, join) {
     db.query(`SELECT ${selection || '*'} FROM ${table} ${join || ''}`, (err, results) => {
         err ? console.error(err) : console.table(results);
@@ -25,6 +27,7 @@ function view(table, selection, join) {
     });
 }
 
+// View employees by filter
 async function viewBy(filter) {
     const employeesQuery = await getEmployees();
     if (filter === 'manager') {
@@ -73,10 +76,12 @@ async function viewBy(filter) {
     };
 }
 
+// Get id of item from query data
 function getID(queryResult, item) {
     return queryResult[0].filter(obj => obj.name === item.name)[0].id;
 }
 
+// Queries for department, role, and employee tables
 function getDepartments() {
     return db.promise().query(`SELECT id, name FROM department`);
 }
@@ -89,6 +94,7 @@ function getEmployees() {
     return db.promise().query(`SELECT id, CONCAT_WS(' ', first_name, last_name) AS name FROM employee`);
 }
 
+// Add or modify employee
 async function setEmployee(isNew) {
     const rolesQuery = await getRoles();
     const employeesQuery = await getEmployees();
@@ -124,6 +130,7 @@ async function setEmployee(isNew) {
     });
 }
 
+// Add role
 async function addRole() {
     const departments = await getDepartments();
     const role = await queryAddRole(departments);
@@ -137,6 +144,7 @@ async function addRole() {
     );
 }
 
+// Add department
 async function addDepartment() {
     const department = await queryAddDepartment();
     db.query(`INSERT INTO department (name) VALUES (?)`, department.name, (err, results) => {
@@ -145,6 +153,7 @@ async function addDepartment() {
     });
 }
 
+// Delete from tables
 async function deleteFrom(table) {
     let list;
     switch (table) {
@@ -162,6 +171,7 @@ async function deleteFrom(table) {
     deleteRow(table, selection, list);
 }
 
+// Delete row of the selected item
 function deleteRow(table, item, itemList) {
     const item_id = itemList[0].filter(obj => obj.name === item.name)[0].id;
     db.query(`DELETE FROM ${table} WHERE id = ?`, item_id, (err, result) => {
@@ -170,6 +180,7 @@ function deleteRow(table, item, itemList) {
     });
 };
 
+// Main menu function
 async function main() {
     const answer = await mainMenu();
     switch (answer.choice) {
@@ -228,6 +239,7 @@ async function main() {
     }
 }
 
+// ASCII title card
 function asciiTitle() {
     console.log(`
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -240,6 +252,7 @@ function asciiTitle() {
 `);
 }
 
+// Run on start
 function init() {
     asciiTitle();
     main();

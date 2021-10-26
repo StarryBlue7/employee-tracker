@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 
+// Main menu prompt
 function mainMenu() {
     const menu = [
         {
@@ -26,6 +27,7 @@ function mainMenu() {
     return inquirer.prompt(menu)
 }
 
+// Prompt for adding department
 function queryAddDepartment() {
     const questions = [
         {
@@ -37,6 +39,7 @@ function queryAddDepartment() {
     return inquirer.prompt(questions)
 }
 
+// Prompt for adding role
 function queryAddRole(departmentsQuery) {
     const departments = [];
     departmentsQuery[0].forEach(obj => {
@@ -63,6 +66,7 @@ function queryAddRole(departmentsQuery) {
     return inquirer.prompt(questions)
 }
 
+// Prompt for adding/modifying employee
 function queryEmployee(rolesQuery, employeesQuery, isNew, employee) {
     const roleList = [];
     const employeeList = ['None'];
@@ -120,6 +124,7 @@ function queryEmployee(rolesQuery, employeesQuery, isNew, employee) {
     return isNew ? inquirer.prompt(newQuestions) : inquirer.prompt(updateQuestions);
 }
 
+// Generate prompt with list from database query
 function chooseFromList(type, queryResult) {
     const list = [];
     queryResult[0].forEach(item => {
